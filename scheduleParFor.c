@@ -78,9 +78,16 @@ void Schedule(int thread_count, int n) {
       max[i] = 0;
    }
    
-   ** TODO **
-   }  /* End of omp parallel */
-   
+   #pragma omp parallel for num_threads(thread_count)
+   for (int i = 0; i < n; i++){
+      if(min[omp_get_thread_num()] > i){
+         min[omp_get_thread_num()] = i;
+      }
+      if(max[omp_get_thread_num()] < i){
+         max[omp_get_thread_num()] = i;
+      }
+   }
+
    for (i = 0; i < thread_count; i++) {
       if (min[i] == n && max[i] == 0)
          printf("Th %d > No iterations\n", i);
