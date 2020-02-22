@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <omp.h>
 #include "my_rand.h"
+#include <math.h>
+#include <stdbool.h>
 
 /* Serial function */
 void Get_args(char* argv[], int* thread_count_p, 
@@ -27,6 +29,9 @@ void Usage(char* prog_name);
 
 /* Parallel function */
 long long int Count_hits(long long int number_of_tosses, int thread_count);
+
+/* Euclidean distance */
+float isAHit(float x, float y);
 
 /*---------------------------------------------------------------------*/
 int main(int argc, char* argv[]) {
@@ -46,6 +51,10 @@ int main(int argc, char* argv[]) {
    return 0;
 }
 
+float isAHit(float x, float y) {
+   return sqrt( pow(x, 2) + pow(y, 2));
+}
+
 /*---------------------------------------------------------------------
  * Function:      Count_hits
  * Purpose:       Calculate number of hits in the unit circle
@@ -54,16 +63,17 @@ int main(int argc, char* argv[]) {
  */
 
 long long int Count_hits(long long int number_of_tosses, int thread_count) {
-   long int aciertos_en_circulo = 0;
-   #pragma omp parallel for num_threads(thread_count)
-   for (int toss = 0; toss < number_of_tosses; toss++){
-      srand ( time ( NULL));
-      double random_value = (double)rand()/RAND_MAX*2.0-1.0;
-      x = random double entre -1 y 1;
-      y = random double entre -1 y 1;
-      distancia_cuadrada = x*x + y*y;
-      if (distancia_cuadrada <= 1) aciertos_en_circulo ++;
+   long long int hits = 0;
+   float x, y;
+   #pragma omp parallel for num_threads(thread_count) reduction(+: hits)
+   for(int i = 0; i < number_of_tosses; i++) {
+      x = (((float)rand()/(float)(RAND_MAX)) * 2) - 1;
+      y = (((float)rand()/(float)(RAND_MAX)) * 2) - 1;
+      if (isAHit(x, y) <= 1) {
+         hits++;
+      }
    }
+  return hits;
 }  /* Count_hits */
 
 /*---------------------------------------------------------------------
